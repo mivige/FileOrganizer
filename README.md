@@ -2,7 +2,7 @@
 
 ![Version](https://img.shields.io/badge/Version-0.1.0-brightgreen)
 ![Language](https://img.shields.io/badge/Language-python-blue)
-![License](https://img.shields.io/badge/License-GPL_2.0-red)
+![License](https://img.shields.io/badge/License-GPL_3.0-red)
 ---
 File Organizer is a Python-based GUI application that helps you organize files in a specified directory based on different criteria such as file type, date, or file size.
 
