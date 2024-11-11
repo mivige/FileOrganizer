@@ -9,7 +9,7 @@ class AIFolderOperator:
     def __init__(self, target_folder, folder_names, organization_method, min_items_per_folder=1):
         self.target_folder = target_folder
         self.subfolder_names = folder_names
-        self.organization_strategy = organization_method
+        self.organization_method = organization_method
         self.min_items_per_subfolder = min_items_per_folder
         self.file_type_categories_map = {
             'images': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'],
@@ -27,7 +27,7 @@ class AIFolderOperator:
         }
 
     def run(self):
-        print(f"AI Folder Operator is running using {self.organization_strategy} method...")
+        print(f"AI Folder Operator is running using {self.organization_method} method...")
         self.organize_files_into_subfolders()
 
     def organize_files_into_subfolders(self):
@@ -35,9 +35,9 @@ class AIFolderOperator:
         for filename in os.listdir(self.target_folder):
             file_path = os.path.join(self.target_folder, filename)
             if os.path.isfile(file_path):
-                if self.organization_strategy == "Filetype":
+                if self.organization_method == "Filetype":
                     destination_subfolder = self.determine_subfolder_for_type(filename)
-                elif self.organization_strategy == "Date":
+                elif self.organization_method == "Date":
                     destination_subfolder = self.determine_subfolder_for_date(file_path)
                 else:  # Filesize method
                     destination_subfolder = self.determine_subfolder_for_size(file_path)
@@ -122,7 +122,7 @@ class AIFolderOperator:
         for subfolder in self.subfolder_names:
             normalized_folder = subfolder.lower()
 
-            if self.organization_strategy == "Date":
+            if self.organization_method == "Date":
                 if self.is_date_match(normalized_category, normalized_folder):
                     return subfolder
             elif normalized_category in normalized_folder or normalized_folder in normalized_category:
@@ -165,15 +165,15 @@ class AIFolderOperator:
             print(f"Moved {os.path.basename(file_path)} to {subfolder}")
 
     def get_auto_folder_names(self):
-        if self.organization_strategy !="Filetype" and self.organization_strategy !="Date": #Filesystems
+        if self.organization_method !="Filetype" and self.organization_method !="Date": #Filesystems
             return list(self.file_size_thresholds.keys()) + ['Other']
         folder_counts = defaultdict(int)
         for filename in os.listdir(self.target_folder):
             file_path = os.path.join(self.target_folder, filename)
             if os.path.isfile(file_path):
-                if self.organization_strategy == "Filetype":
+                if self.organization_method == "Filetype":
                     folder_name = self.determine_subfolder_for_type(filename)
-                elif self.organization_strategy == "Date":
+                elif self.organization_method == "Date":
                     folder_name = self.determine_subfolder_for_date(filename)
                 folder_counts[folder_name] += 1
 
