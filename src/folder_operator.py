@@ -159,32 +159,16 @@ class AIFolderOperator:
             print(f"Moved {os.path.basename(file_path)} to {subfolder}")
 
     def get_auto_folder_names(self):
-        if self.organization_method == "Filetype":
-            return self.get_auto_folder_names_by_type()
-        elif self.organization_method == "Date":
-            return self.get_auto_folder_names_by_date()
-        else:  # Filesize method
-            return self.get_auto_folder_names_by_size()
-
-    def get_auto_folder_names_by_type(self):
+        if self.organization_method !="Filetype" and self.organization_method !="Date": #Filesystems
+            return list(self.file_size_categories.keys()) + ['Other']
         folder_counts = defaultdict(int)
         for filename in os.listdir(self.target_folder):
             file_path = os.path.join(self.target_folder, filename)
             if os.path.isfile(file_path):
-                folder_name = self.determine_subfolder_for_type(filename)
+                if self.organization_method == "Filetype":
+                    folder_name = self.determine_subfolder_for_type(filename)
+                elif self.organization_method == "Date":
+                    folder_name = self.determine_subfolder_for_date(filename)
                 folder_counts[folder_name] += 1
 
         return [folder for folder, count in folder_counts.items() if count >= self.min_items_per_folder] + ['Other']
-
-    def get_auto_folder_names_by_date(self):
-        folder_counts = defaultdict(int)
-        for filename in os.listdir(self.target_folder):
-            file_path = os.path.join(self.target_folder, filename)
-            if os.path.isfile(file_path):
-                folder_name = self.determine_subfolder_for_date(file_path)
-                folder_counts[folder_name] += 1
-
-        return [folder for folder, count in folder_counts.items() if count >= self.min_items_per_folder] + ['Other']
-
-    def get_auto_folder_names_by_size(self):
-        return list(self.file_size_categories.keys()) + ['Other']
