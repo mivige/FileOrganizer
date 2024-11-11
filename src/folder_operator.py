@@ -62,14 +62,14 @@ class AIFolderOperator:
         
         for category, extensions in self.file_type_categories_map.items():
             if file_extension in extensions:
-                return self.find_matching_folder(category)
+                return self.find_matching_subfolder(category)
 
         mime_type, _ = mimetypes.guess_type(filename)
         if mime_type:
             general_type = mime_type.split('/')[0]
-            return self.find_matching_folder(general_type)
+            return self.find_matching_subfolder(general_type)
 
-        return self.find_matching_folder('other')
+        return self.find_matching_subfolder('other')
 
     def determine_subfolder_for_date(self, file_path):
         mod_time = os.path.getmtime(file_path)
@@ -78,7 +78,7 @@ class AIFolderOperator:
         month = date.strftime("%m")
 
         # Check for year-only match
-        year_match = self.find_matching_folder(year)
+        year_match = self.find_matching_subfolder(year)
         if year_match != year:
             return year_match
 
@@ -95,7 +95,7 @@ class AIFolderOperator:
         ]
 
         for pattern in date_patterns:
-            match = self.find_matching_folder(pattern)
+            match = self.find_matching_subfolder(pattern)
             if match != pattern:
                 return match
 
@@ -106,29 +106,35 @@ class AIFolderOperator:
         file_size = os.path.getsize(file_path)
         for category, size_limit in self.file_size_thresholds.items():
             if file_size >= size_limit:
-                return self.find_matching_folder(category)
-        return self.find_matching_folder('Small Files')
+                return self.find_matching_subfolder(category)
+        return self.find_matching_subfolder('Small Files')
 
-    def find_matching_folder(self, category):
+    def find_matching_subfolder(self, category):
+
+        normalized_category = category.lower()
         lowercase_folders = [folder.lower() for folder in self.subfolder_names]
-        #If category exist with direct match
-        if category.lower() in lowercase_folders:
-            return self.subfolder_names[lowercase_folders.index(category.lower())]
+
+        #Check if category is exact match
+        if normalized_category in lowercase_folders:
+            return self.subfolder_names[lowercase_folders.index(normalized_category)]
         
-        #Checks for a soft match
-        for i, folder in enumerate(lowercase_folders):
+        #Try for soft matches based on organization strategy
+        for subfolder in self.subfolder_names:
+            normalized_folder = subfolder.lower()
+
             if self.organization_strategy == "Date":
-                if self.is_date_match(category, folder):
-                    return self.subfolder_names[i]
-            elif category.lower() in folder or folder in category.lower():
-                return self.subfolder_names[i]
+                if self.is_date_match(normalized_category, normalized_folder):
+                    return subfolder
+            elif normalized_category in normalized_folder or normalized_folder in normalized_category:
+                return subfolder
         
         if 'other' in lowercase_folders:
             return self.subfolder_names[lowercase_folders.index('other')]
         elif self.subfolder_names:
             return self.subfolder_names[-1]
-        else:
-            return category
+        
+        #Return category if no match is found
+        return category
 
     def is_date_match(self, date_str, folder_name):
         # Extract year and month from date_str
