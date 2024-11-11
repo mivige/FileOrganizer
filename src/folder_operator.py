@@ -20,7 +20,7 @@ class AIFolderOperator:
             'code': ['.py', '.js', '.html', '.css', '.java', '.cpp', '.c', '.php', '.rb', '.swift', '.go'],
             'executables': ['.exe', '.msi', '.app', '.dmg'],
         }
-        self.file_size_categories = {
+        self.file_size_thresholds = {
             'Large Files': 100 * 1024 * 1024,  # 100 MB
             'Medium Files': 10 * 1024 * 1024,  # 10 MB
             'Small Files': 0
@@ -104,7 +104,7 @@ class AIFolderOperator:
 
     def determine_subfolder_for_size(self, file_path):
         file_size = os.path.getsize(file_path)
-        for category, size_limit in self.file_size_categories.items():
+        for category, size_limit in self.file_size_thresholds.items():
             if file_size >= size_limit:
                 return self.find_matching_folder(category)
         return self.find_matching_folder('Small Files')
@@ -160,7 +160,7 @@ class AIFolderOperator:
 
     def get_auto_folder_names(self):
         if self.organization_strategy !="Filetype" and self.organization_strategy !="Date": #Filesystems
-            return list(self.file_size_categories.keys()) + ['Other']
+            return list(self.file_size_thresholds.keys()) + ['Other']
         folder_counts = defaultdict(int)
         for filename in os.listdir(self.target_folder):
             file_path = os.path.join(self.target_folder, filename)
