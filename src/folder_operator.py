@@ -36,11 +36,11 @@ class AIFolderOperator:
             file_path = os.path.join(self.target_folder, filename)
             if os.path.isfile(file_path):
                 if self.organization_method == "Filetype":
-                    destination_subfolder = self.decide_subfolder_by_type(filename)
+                    destination_subfolder = self.get_subfolder_for_type(filename)
                 elif self.organization_method == "Date":
-                    destination_subfolder = self.decide_subfolder_by_date(file_path)
+                    destination_subfolder = self.get_subfolder_for_date(file_path)
                 else:  # Filesize method
-                    destination_subfolder = self.decide_subfolder_by_size(file_path)
+                    destination_subfolder = self.get_subfolder_for_size(file_path)
                 file_distribution[destination_subfolder].append(file_path)
 
         # Handle minimum items per folder requirement
@@ -56,29 +56,29 @@ class AIFolderOperator:
         for subfolder, files in file_distribution.items():
             self.create_folder_and_move_files(subfolder, files)
 
-    def decide_subfolder_by_type(self, filename):
+    def get_subfolder_for_type(self, filename):
         _, file_extension = os.path.splitext(filename)
         file_extension = file_extension.lower()
-
+        
         for category, extensions in self.file_type_categories.items():
             if file_extension in extensions:
-                return self.get_matching_folder(category)
+                return self.get_subfolder(category)
 
         mime_type, _ = mimetypes.guess_type(filename)
         if mime_type:
             general_type = mime_type.split('/')[0]
-            return self.get_matching_folder(general_type)
+            return self.get_subfolder(general_type)
 
-        return self.get_matching_folder('other')
+        return self.get_subfolder('other')
 
-    def decide_subfolder_by_date(self, file_path):
+    def get_subfolder_for_date(self, file_path):
         mod_time = os.path.getmtime(file_path)
         date = datetime.fromtimestamp(mod_time)
         year = date.strftime("%Y")
         month = date.strftime("%m")
 
         # Check for year-only match
-        year_match = self.get_matching_folder(year)
+        year_match = self.get_subfolder(year)
         if year_match != year:
             return year_match
 
@@ -95,23 +95,23 @@ class AIFolderOperator:
         ]
 
         for pattern in date_patterns:
-            match = self.get_matching_folder(pattern)
+            match = self.get_subfolder(pattern)
             if match != pattern:
                 return match
 
         # If no match found, return the full date string
         return f"{year}-{month}"
 
-    def decide_subfolder_by_size(self, file_path):
+    def get_subfolder_for_size(self, file_path):
         file_size = os.path.getsize(file_path)
         for category, size_limit in self.file_size_categories.items():
             if file_size >= size_limit:
-                return self.get_matching_folder(category)
-        return self.get_matching_folder('Small Files')
+                return self.get_subfolder(category)
+        return self.get_subfolder('Small Files')
 
-    def get_matching_folder(self, category):
+    def get_subfolder(self, category):
         lowercase_folders = [folder.lower() for folder in self.folder_names]
-        
+        #If the category is an existing folder
         if category.lower() in lowercase_folders:
             return self.folder_names[lowercase_folders.index(category.lower())]
         
@@ -170,7 +170,7 @@ class AIFolderOperator:
         for filename in os.listdir(self.target_folder):
             file_path = os.path.join(self.target_folder, filename)
             if os.path.isfile(file_path):
-                folder_name = self.decide_subfolder_by_type(filename)
+                folder_name = self.get_subfolder_for_type(filename)
                 folder_counts[folder_name] += 1
 
         return [folder for folder, count in folder_counts.items() if count >= self.min_items_per_folder] + ['Other']
@@ -180,7 +180,7 @@ class AIFolderOperator:
         for filename in os.listdir(self.target_folder):
             file_path = os.path.join(self.target_folder, filename)
             if os.path.isfile(file_path):
-                folder_name = self.decide_subfolder_by_date(file_path)
+                folder_name = self.get_subfolder_for_date(file_path)
                 folder_counts[folder_name] += 1
 
         return [folder for folder, count in folder_counts.items() if count >= self.min_items_per_folder] + ['Other']
