@@ -30,7 +30,7 @@ class FolderOrganizerGUI:
         # Organization method selection
         ttk.Label(main_frame, text="Organization Method:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
         ttk.Combobox(main_frame, textvariable=self.organization_method, values=["Filetype", "Date", "Filesize"], state="readonly").grid(row=1, column=1, padx=5, pady=5, sticky="w")
-        self.organization_method.trace('w', self.on_method_change)
+        self.organization_method.trace_add('write', self.on_method_change)
 
         # Auto-name folders checkbox
         ttk.Checkbutton(main_frame, text="Auto-name folders", variable=self.auto_name_folders, command=self.toggle_auto_name).grid(row=2, column=0, columnspan=2, padx=5, pady=5, sticky="w")
